@@ -26,66 +26,84 @@ const game = new Phaser.Game(config);
 
 let haba;
 let thief;
+let ground;
+let roadLines;
 let currentLane = 1; // 0 = Gauche, 1 = Milieu, 2 = Droite
 const lanes = [80, 180, 280]; // Positions X des 3 voies
+let isGameOver = false;
 
 function preload() {
-  // Chargement des éléments de base (rendu sous forme de formes géométriques pour le prototype)
+  // Chargement de tes propres images PNG
+  this.load.image('haba_img', 'haba_run.png');
+  this.load.image('thief_img', 'thief_run.png');
 }
 
 function create() {
-  const scene = this;
-
-  // 1. Dessin des voies de la rue
-  const graphics = this.add.graphics();
+  // 1. Décor et route défilante
+  let graphics = this.add.graphics();
   graphics.fillStyle(0x334155, 1);
-  graphics.fillRect(30, 0, 300, 640);
+  graphics.fillRect(0, 0, 360, 640);
+  graphics.generateTexture('roadTexture', 360, 640);
+  graphics.destroy();
+  
+  ground = this.add.tileSprite(180, 320, 360, 640, 'roadTexture');
 
   // Lignes de séparation de voies
-  graphics.lineStyle(2, 0xffffff, 0.5);
-  graphics.strokeLineShape(new Phaser.Geom.Line(130, 0, 130, 640));
-  graphics.strokeLineShape(new Phaser.Geom.Line(230, 0, 230, 640));
+  graphics = this.add.graphics();
+  graphics.lineStyle(4, 0xffffff, 0.7);
+  graphics.strokeLineShape(new Phaser.Geom.Line(0, 0, 0, 100));
+  graphics.generateTexture('lineTexture', 4, 100);
+  graphics.destroy();
 
-  // 2. Création du Voleur (devant)
-  thief = this.add.rectangle(lanes[1], 150, 40, 40, 0xef4444);
-  this.physics.add.existing(thief);
+  roadLines = this.add.tileSprite(130, 320, 4, 640, 'lineTexture');
+  this.add.tileSprite(230, 320, 4, 640, 'lineTexture');
 
-  // 3. Création de notre Héros : HABA
-  haba = this.add.rectangle(lanes[currentLane], 500, 45, 45, 0x3b82f6);
-  this.physics.add.existing(haba);
+  // 2. Création de HABA (Joueur)
+  haba = this.physics.add.sprite(lanes[currentLane], 500, 'haba_img');
+  // Ajuster la taille de ton image si elle est trop grande (ex: 0.2 ou 0.5)
+  haba.setDisplaySize(60, 80); 
 
-  // Texte d'identification
-  this.add.text(180, 30, "STREET SPRINT", { font: "bold 20px Arial", fill: "#ffffff" }).setOrigin(0.5);
-  this.add.text(180, 580, "HABA RUNS!", { font: "16px Arial", fill: "#60a5fa" }).setOrigin(0.5);
+  // 3. Création du VOLEUR
+  thief = this.physics.add.sprite(lanes[1], 150, 'thief_img');
+  thief.setDisplaySize(60, 80);
 
-  // 4. Contrôles au clavier (Pour tester sur PC)
-  this.input.keyboard.on('keydown-LEFT', () => moveHaba(-1));
-  this.input.keyboard.on('keydown-RIGHT', () => moveHaba(1));
+  // 4. Titre du jeu
+  this.add.text(180, 30, "STREET SPRINT", { font: "bold 24px Arial", fill: "#ffffff", stroke: "#000000", strokeThickness: 4 }).setOrigin(0.5);
+  this.add.text(180, 60, "HABA'S RUSH", { font: "18px Arial", fill: "#60a5fa" }).setOrigin(0.5);
 
-  // 5. Contrôles tactiles / Swipe (Pour smartphone)
+  // 5. Contrôles (Clavier et Toucher)
+  this.input.keyboard.on('keydown-LEFT', () => moveHaba.call(this, -1));
+  this.input.keyboard.on('keydown-RIGHT', () => moveHaba.call(this, 1));
+
   let touchStartX = 0;
-  this.input.on('pointerdown', (pointer) => {
-    touchStartX = pointer.x;
-  });
-
+  this.input.on('pointerdown', (pointer) => { touchStartX = pointer.x; });
   this.input.on('pointerup', (pointer) => {
-    let touchEndX = pointer.x;
-    let diffX = touchEndX - touchStartX;
-
+    let diffX = pointer.x - touchStartX;
     if (Math.abs(diffX) > 30) {
-      if (diffX > 0) moveHaba(1);  // Swipe Droite
-      else moveHaba(-1);           // Swipe Gauche
+      if (diffX > 0) moveHaba.call(this, 1);  // Swipe Droite
+      else moveHaba.call(this, -1);           // Swipe Gauche
     }
   });
 }
 
 function moveHaba(direction) {
-  // Changer de voie sans sortir de la route
+  if (isGameOver) return;
   currentLane = Phaser.Math.Clamp(currentLane + direction, 0, 2);
-  haba.x = lanes[currentLane];
+  this.tweens.add({
+    targets: haba,
+    x: lanes[currentLane],
+    duration: 120,
+    ease: 'Power1'
+  });
 }
 
 function update() {
-  // Animation du voleur qui oscille pour simuler la fuite
-  thief.x = lanes[currentLane] + Math.sin(this.time.now / 200) * 10;
+  if (isGameOver) return;
+
+  // Défilement du sol pour donner la sensation de vitesse !
+  ground.tilePositionY -= 8;
+  roadLines.tilePositionY -= 12;
+
+  // Le voleur oscille de gauche à droite devant
+  thief.x = lanes[currentLane] + Math.sin(this.time.now / 250) * 20;
 }
