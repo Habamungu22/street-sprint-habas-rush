@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Street Sprint : La Ruée d'Haba</title>
+<meta name="description" content="Jeu de course dans la rue : rattrapez le voleur, évitez les obstacles. Par Haba Technologie.">
+<meta name="author" content="Haba Technologie">
+<meta name="theme-color" content="#0b1220">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+  html,body{margin:0;height:100%;background:#0b1220;overflow:hidden;overscroll-behavior:none}
+  body{display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none}
+  canvas{display:block;touch-action:none;outline:none;background:#0b1220}
+  #namebox{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,10,22,.9);z-index:5;font-family:"Segoe UI",Roboto,Arial,sans-serif}
+  #namebox[hidden]{display:none}
+  #nameform{background:#13213a;border:1px solid #2b4058;border-radius:16px;padding:1.5rem;width:min(86vw,320px);text-align:center;color:#fff}
+  #nameform h2{margin:0 0 .4rem;font-size:1.3rem}
+  #nameform p{margin:0 0 1rem;color:#9fb3c8;font-size:.95rem}
+  #nameinput{width:100%;box-sizing:border-box;padding:.8rem;border-radius:10px;border:2px solid #2b4058;background:#0b1220;color:#fff;font-size:1.1rem;text-align:center}
+  #nameinput:focus{outline:none;border-color:#1f6feb}
+  #nameform button{margin-top:1rem;width:100%;padding:.85rem;border:0;border-radius:10px;background:#1f6feb;color:#fff;font-size:1.05rem;font-weight:700}
+  #nameform small{display:block;margin-top:1rem;color:#7d93aa;font-size:.78rem}
+  noscript{color:#fff;font:16px sans-serif;padding:1rem}
+</style>
+</head>
+<body>
+<canvas id="game" width="360" height="640" aria-label="Street Sprint : La Ruée d'Haba"></canvas>
+<div id="namebox" hidden>
+  <form id="nameform" autocomplete="off">
+    <h2>Bienvenue !</h2>
+    <p>Comment t'appelles-tu ? Tu seras le héros qui poursuit le voleur.</p>
+    <input id="nameinput" maxlength="12" placeholder="Haba" aria-label="Ton nom">
+    <button type="submit">Commencer</button>
+    <small>Application développée par Haba Technologie</small>
+  </form>
+</div>
+<noscript>Activez JavaScript pour jouer à Street Sprint.</noscript>
+<script src="game.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+</script>
+</body>
+</html>
